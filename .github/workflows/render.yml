@@ -2,6 +2,8 @@ name: Render Faceless Video
 on:
   repository_dispatch:
     types: [render-faceless-short]
+permissions:
+  contents: write
 jobs:
   render:
     runs-on: ubuntu-latest
