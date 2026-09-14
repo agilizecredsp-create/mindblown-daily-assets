@@ -53,12 +53,26 @@ baixar_com_retry() {
     sleep 4
   done
   if [[ "$url" == https://raw.githubusercontent.com/* ]] && [ -n "${GH_TOKEN:-}" ]; then
-    echo "  Tentando via api.github.com (sem lag de CDN)..."
     local api_url
     api_url=$(echo "$url" | sed -E 's#https://raw.githubusercontent.com/([^/]+)/([^/]+)/([^/]+)/(.*)#https://api.github.com/repos/\1/\2/contents/\4?ref=\3#')
-    if curl -sL --fail --max-time 30 -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.raw" -o "$destino" "$api_url" && [ -s "$destino" ]; then
-      return 0
-    fi
+    local fallback_tentativa=1
+    local fallback_max=5
+    while [ "$fallback_tentativa" -le "$fallback_max" ]; do
+      echo "  Tentando via api.github.com (sem lag de CDN) - tentativa $fallback_tentativa/$fallback_max..."
+      if curl -sL --fail --max-time 30 -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.raw" -o "$destino" "$api_url" && [ -s "$destino" ]; then
+        if [ "$tipo" = "img" ]; then
+          local assinatura2
+          assinatura2=$(od -An -tx1 -N4 "$destino" 2>/dev/null | tr -d ' \n')
+          case "$assinatura2" in
+            ffd8ff*|89504e47*) return 0 ;;
+          esac
+        else
+          return 0
+        fi
+      fi
+      fallback_tentativa=$((fallback_tentativa + 1))
+      sleep 5
+    done
   fi
   echo "ERRO FATAL: nao foi possivel baixar apos $tentativas tentativas: $url"
   exit 1
