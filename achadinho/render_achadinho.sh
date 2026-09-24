@@ -86,7 +86,8 @@ if de:
     x0, y0, x1, y1 = d.textbbox((0, 0), "de " + de, font=fde)
     x = (W - (x1 - x0)) // 2
     d.text((x - x0, y - y0), "de " + de, font=fde, fill=(210, 210, 210))
-    d.line((x + 70, y + (y1 - y0) // 2 + 4, x + (x1 - x0), y + (y1 - y0) // 2 + 4), fill=(210, 210, 210), width=5)
+    dx = d.textlength("de ", font=fde)
+    d.line((x + dx, y + (y1 - y0) // 2 + 4, x + (x1 - x0), y + (y1 - y0) // 2 + 4), fill=(210, 210, 210), width=5)
     y += 80
 centro("por " + os.environ["PRECO"], y, f(B, 112), AMARELO)
 if desc:
