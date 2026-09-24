@@ -29,7 +29,7 @@ import asyncio, json, os, re, edge_tts
 # A legenda volta pra "Shopee" no legenda.py.
 TEXTO = re.sub(r"(?i)\bshopee\b", "Xôpi", os.environ["NARRACAO"])
 async def main():
-    com = edge_tts.Communicate(TEXTO, "pt-BR-FranciscaNeural", rate="+10%", boundary="WordBoundary")
+    com = edge_tts.Communicate(TEXTO, os.environ.get("VOZ") or "pt-BR-FranciscaNeural", rate=os.environ.get("VELOCIDADE") or "+0%", boundary="WordBoundary")
     palavras = []
     with open("narracao.mp3", "wb") as f:
         async for ch in com.stream():
