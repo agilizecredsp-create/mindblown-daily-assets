@@ -29,6 +29,7 @@ jobs:
           CTA: ${{ github.event.client_payload.cta }}
           VOZ: ${{ github.event.client_payload.voz }}
           VELOCIDADE: ${{ github.event.client_payload.velocidade }}
+          AUDIO_URL: ${{ github.event.client_payload.audioUrl }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           ./achadinho/render_achadinho.sh
