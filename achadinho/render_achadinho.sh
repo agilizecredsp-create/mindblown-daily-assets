@@ -29,7 +29,7 @@ import asyncio, json, os, re, edge_tts
 # A legenda volta pra "Shopee" no legenda.py.
 TEXTO = re.sub(r"(?i)\bshopee\b", "Xôpi", os.environ["NARRACAO"])
 async def main():
-    com = edge_tts.Communicate(TEXTO, os.environ.get("VOZ") or "pt-BR-FranciscaNeural", rate=os.environ.get("VELOCIDADE") or "+0%", boundary="WordBoundary")
+    com = edge_tts.Communicate(TEXTO, os.environ.get("VOZ") or "pt-BR-ThalitaMultilingualNeural", rate=os.environ.get("VELOCIDADE") or "+10%", boundary="WordBoundary")
     palavras = []
     with open("narracao.mp3", "wb") as f:
         async for ch in com.stream():
@@ -41,7 +41,24 @@ async def main():
     print(len(palavras), "palavras")
 asyncio.run(main())
 PYEOF
-python3 tts.py
+if [ -n "${AUDIO_URL:-}" ]; then
+  # narracao pronta (OpenAI TTS gerada no n8n): baixa e tira os tempos das palavras com faster-whisper
+  echo "== Usando narracao pronta + faster-whisper pra legenda =="
+  curl -sL --fail --retry 5 --retry-delay 4 -o narracao.mp3 "$AUDIO_URL"
+  pip install faster-whisper --break-system-packages --quiet 2>/dev/null || pip install faster-whisper --quiet
+  cat > whisper.py << 'PYEOF'
+import json
+from faster_whisper import WhisperModel
+m = WhisperModel("small", device="cpu", compute_type="int8")
+seg, _ = m.transcribe("narracao.mp3", word_timestamps=True, language="pt")
+p = [{"start": w.start, "end": w.end, "text": w.word.strip()} for s in seg for w in s.words if w.word.strip()]
+json.dump(p, open("palavras.json", "w", encoding="utf-8"), ensure_ascii=False)
+print(len(p), "palavras")
+PYEOF
+  python3 whisper.py
+else
+  python3 tts.py
+fi
 DUR=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 narracao.mp3)
 TOTAL=$(python3 -c "print(round($DUR + 1.2, 2))")
 echo "Narracao: ${DUR}s  Video: ${TOTAL}s"
