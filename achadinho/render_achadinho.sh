@@ -24,9 +24,11 @@ done
 
 echo "== Narracao (edge-tts, gratis) + tempos de cada palavra =="
 cat > tts.py << 'PYEOF'
-import asyncio, json, os, edge_tts
+import asyncio, json, os, re, edge_tts
+# a voz fala "Chopei" pra Shopee: manda a pronuncia brasileira e a legenda volta pra grafia certa
+TEXTO = re.sub(r"(?i)shopee", "Xópi", os.environ["NARRACAO"])
 async def main():
-    com = edge_tts.Communicate(os.environ["NARRACAO"], "pt-BR-FranciscaNeural", rate="+10%", boundary="WordBoundary")
+    com = edge_tts.Communicate(TEXTO, "pt-BR-FranciscaNeural", rate="+10%", boundary="WordBoundary")
     palavras = []
     with open("narracao.mp3", "wb") as f:
         async for ch in com.stream():
@@ -112,7 +114,7 @@ out = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920"
 for i in range(0, len(p), 3):
     g = p[i:i + 3]
     fim = p[i + 3]["start"] if i + 3 < len(p) else g[-1]["end"] + 0.4
-    out.append("Dialogue: 0,%s,%s,L,,0,0,0,,%s" % (t(g[0]["start"]), t(fim), " ".join(w["text"] for w in g).upper()))
+    out.append("Dialogue: 0,%s,%s,L,,0,0,0,,%s" % (t(g[0]["start"]), t(fim), " ".join("Shopee" if w["text"].strip(".,!?").lower() in ("xópi", "xopi") else w["text"] for w in g).upper()))
 open("legenda.ass", "w", encoding="utf-8").write("\n".join(out) + "\n")
 PYEOF
 python3 legenda.py
