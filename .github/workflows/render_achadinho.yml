@@ -27,6 +27,8 @@ jobs:
           DESCONTO: ${{ github.event.client_payload.desconto }}
           SELO: ${{ github.event.client_payload.selo }}
           CTA: ${{ github.event.client_payload.cta }}
+          VOZ: ${{ github.event.client_payload.voz }}
+          VELOCIDADE: ${{ github.event.client_payload.velocidade }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           ./achadinho/render_achadinho.sh
