@@ -83,10 +83,10 @@ for i, p in enumerate(prods):
 fundo = Image.new("RGB", (W, H), LAR); d = ImageDraw.Draw(fundo)
 logo(fundo, 420, (W - 420) // 2, 150)
 centro(d, "Grupo VIP de ofertas", 640, f(B, 72), AMA)
-for j, t in enumerate(["Achadinhos com desconto", "todo dia no WhatsApp", "", "Nota alta e milhares", "de vendas", "", "Sem spam: so os admins postam"]):
-    centro(d, t, 800 + j * 80, f(B, 52), (255, 255, 255))
-centro(d, "ENTRA GRATIS", 1480, f(B, 96), LAR, bg=(255, 255, 255), pad=(50, 30), raio=48)
-centro(d, "toque no botao abaixo", 1680, f(R, 50), (255, 255, 255))
+for j, t in enumerate(["Achadinhos com desconto", "todo dia no WhatsApp", "Nota alta e milhares de vendas", "Sem spam: só os admins postam"]):
+    centro(d, t, 790 + j * 85, f(B, 50), (255, 255, 255))
+centro(d, "ENTRA GRÁTIS", 1480, f(B, 96), LAR, bg=(255, 255, 255), pad=(50, 30), raio=48)
+centro(d, "toque no botão abaixo", 1680, f(R, 50), (255, 255, 255))
 fundo.save("final.png")
 PYEOF
 python3 artes.py
