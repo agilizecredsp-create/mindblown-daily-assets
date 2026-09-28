@@ -88,6 +88,14 @@ def centro(txt, y, fonte, cor, pad=None, bg=None, raio=40):
     d.text((x - x0, y - y0), txt, font=fonte, fill=cor)
     return w, h
 
+# logo do Achei Barato! no canto (28/09)
+try:
+    lg = Image.open("../achadinho/logo.png").convert("RGBA").resize((150, 150))
+    m = Image.new("L", (150, 150), 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, 150, 150), 32, fill=255)
+    fundo.paste(lg, (30, 30), m)
+except Exception as e:
+    print("sem logo:", e)
+
 # selo do topo
 centro(os.environ.get("SELO", "ACHADINHO DO DIA"), 130, f(B, 58), (255, 255, 255), pad=(44, 24), bg=LARANJA)
 
