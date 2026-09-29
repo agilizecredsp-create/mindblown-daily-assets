@@ -31,6 +31,7 @@ jobs:
           VELOCIDADE: ${{ github.event.client_payload.velocidade }}
           AUDIO_URL: ${{ github.event.client_payload.audioUrl }}
           GANCHO: ${{ github.event.client_payload.gancho }}
+          ESTILO: ${{ github.event.client_payload.estilo }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           ./achadinho/render_achadinho.sh
