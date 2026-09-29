@@ -135,8 +135,13 @@ t = lambda s: "%d:%02d:%05.2f" % (s // 3600, (s % 3600) // 60, s % 60)
 out = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920", "WrapStyle: 0", "",
        "[V4+ Styles]",
        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-       "Style: L,DejaVu Sans,78,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,6,2,2,60,60,560,1", "",
+       "Style: L,DejaVu Sans,78,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,6,2,2,60,60,560,1",
+       "Style: H,DejaVu Sans,118,&H0000D6FF,&H0000D6FF,&H00000000,&HA0000000,1,0,0,0,100,100,0,0,3,10,0,5,50,50,0,1", "",
        "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
+# 29/09: gancho gigante (amarelo, caixa escura) nos 1,8s iniciais pra segurar o scroll
+import os
+if os.environ.get("GANCHO"):
+    out.append("Dialogue: 1,0:00:00.00,0:00:01.80,H,,0,0,0,,{\\fad(0,200)}" + os.environ["GANCHO"])
 for i in range(0, len(p), 3):
     g = p[i:i + 3]
     fim = p[i + 3]["start"] if i + 3 < len(p) else g[-1]["end"] + 0.4
@@ -147,5 +152,5 @@ python3 legenda.py
 
 echo "== Renderizando =="
 FRAMES=$(python3 -c "import math; print(math.ceil($TOTAL * 30))")
-ffmpeg -y -i arte.png -i narracao.mp3   -filter_complex "[0:v]scale=1188:2112,zoompan=z='min(zoom+0.0005,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=$FRAMES:s=1080x1920:fps=30,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]"   -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
+ffmpeg -y -i arte.png -i narracao.mp3   -filter_complex "[0:v]scale=1188:2112,zoompan=z='if(lt(on,45),1+on*0.0022,min(1.099+(on-45)*0.0003,1.16))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=$FRAMES:s=1080x1920:fps=30,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]"   -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
 ls -la video.mp4 capa.jpg
