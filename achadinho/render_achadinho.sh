@@ -156,14 +156,35 @@ PYEOF
 python3 legenda.py
 
 echo "== Renderizando =="
-if [ "${ESTILO:-}" = "animado" ]; then
+if [ "${ESTILO:-}" = "animado" ] || [ "${ESTILO:-}" = "adivinha" ]; then
   # 29/09: estilo animado — produto recortado (rembg) flutuando sobre fundo em movimento + preco pulando
+  # 30/09: "adivinha" = mesmo visual, mas o preco fica escondido ("QUANTO CUSTA?") ate a narracao dizer "E o preco? ..."
+  if [ "${ESTILO}" = "adivinha" ]; then
+    cat > revela.py << 'PYEOF'
+import json, re, sys
+p = json.load(open("palavras.json", encoding="utf-8"))
+ks = [k for k, w in enumerate(p) if re.sub(r"[^a-zçã]", "", w["text"].lower()) in ("preço", "preco")]
+k = ks[-1] if ks else -1
+print(round(p[k + 1]["start"], 2) if 0 <= k < len(p) - 1 else round(float(sys.argv[1]) * 0.7, 2))
+PYEOF
+    export REVELA=$(python3 revela.py "$DUR")
+    echo "Preco revelado em ${REVELA}s"
+  fi
   pip install "rembg[cpu]" --break-system-packages --quiet 2>/dev/null || pip install "rembg[cpu]" --quiet
   cp ../achadinho/anima.py . 2>/dev/null || true
   python3 anima.py "$TOTAL" | ffmpeg -y -f rawvideo -pix_fmt rgb24 -s 1080x1920 -r 30 -i - -i narracao.mp3 -filter_complex "[0:v]format=yuv420p,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]" -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
-  ls -la video.mp4 capa.jpg
-  exit 0
-fi
+else
 FRAMES=$(python3 -c "import math; print(math.ceil($TOTAL * 30))")
 ffmpeg -y -i arte.png -i narracao.mp3   -filter_complex "[0:v]scale=1188:2112,zoompan=z='if(lt(on,45),1+on*0.0012,min(1.054+(on-45)*0.00015,1.08))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=$FRAMES:s=1080x1920:fps=30,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]"   -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
+fi
+
+# 30/09: trilha de fundo sem direitos autorais (Mixkit Free License), baixinha por baixo da voz e subindo na tela final
+if [ -n "${MUSICA_URL:-}" ] && curl -sL --fail --retry 3 --max-time 60 -o musica.mp3 "$MUSICA_URL" && [ -s musica.mp3 ]; then
+  FIM=$(python3 -c "print(round($TOTAL - 2.2, 2))"); SAI=$(python3 -c "print(round($TOTAL - 0.8, 2))")
+  if ffmpeg -y -i video.mp4 -stream_loop -1 -ss 2 -i musica.mp3 -filter_complex "[1:a]volume='if(gt(t,$FIM),0.32,0.13)':eval=frame,afade=t=in:d=0.4,afade=t=out:st=$SAI:d=0.8[m];[0:a][m]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 128k -t "$TOTAL" -movflags +faststart com_musica.mp4 -loglevel error; then
+    mv com_musica.mp4 video.mp4; echo "Musica de fundo aplicada"
+  else
+    echo "AVISO: musica falhou, segue sem"
+  fi
+fi
 ls -la video.mp4 capa.jpg
