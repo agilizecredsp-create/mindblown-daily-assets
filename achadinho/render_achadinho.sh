@@ -156,7 +156,22 @@ PYEOF
 python3 legenda.py
 
 echo "== Renderizando =="
-if [ "${ESTILO:-}" = "animado" ] || [ "${ESTILO:-}" = "adivinha" ]; then
+if [ "${ESTILO:-}" = "top3" ]; then
+  # 30/09: "Top 3 do dia" — 3 artes (#3, #2, #1) trocando quando a narracao fala "Numero ..."
+  cp ../achadinho/top3.py . && python3 top3.py
+  cat > cortes.py << 'PYEOF'
+import json, re, sys
+p = json.load(open("palavras.json", encoding="utf-8")); total = float(sys.argv[1])
+ks = [w["start"] for w in p if re.sub(r"[^a-zú]", "", w["text"].lower()) in ("número", "numero")][:3]
+if len(ks) < 3: ks = [0, total / 3, 2 * total / 3]
+print(round(ks[1], 2), round(ks[2] - ks[1], 2), round(total - ks[2], 2))
+PYEOF
+  read D1 D2 D3 < <(python3 cortes.py "$TOTAL")
+  echo "Cortes: $D1 / $D2 / $D3"
+  F1=$(python3 -c "import math; print(math.ceil($D1 * 30))"); F2=$(python3 -c "import math; print(math.ceil($D2 * 30))"); F3=$(python3 -c "import math; print(math.ceil($D3 * 30))")
+  Z="zoompan=z='min(1+on*0.0009,1.07)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30"
+  ffmpeg -y -i seg1.png -i seg2.png -i seg3.png -i narracao.mp3 -filter_complex "[0:v]scale=1188:2112,$Z:d=$F1,trim=duration=$D1[a];[1:v]scale=1188:2112,$Z:d=$F2,trim=duration=$D2[b];[2:v]scale=1188:2112,$Z:d=$F3,trim=duration=$D3[c];[a][b][c]concat=n=3:v=1:a=0,format=yuv420p,ass=legenda.ass[v];[3:a]apad=pad_dur=1.2[au]" -map "[v]" -map "[au]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
+elif [ "${ESTILO:-}" = "animado" ] || [ "${ESTILO:-}" = "adivinha" ]; then
   # 29/09: estilo animado — produto recortado (rembg) flutuando sobre fundo em movimento + preco pulando
   # 30/09: "adivinha" = mesmo visual, mas o preco fica escondido ("QUANTO CUSTA?") ate a narracao dizer "E o preco? ..."
   if [ "${ESTILO}" = "adivinha" ]; then
