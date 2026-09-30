@@ -62,6 +62,8 @@ DE = texto_img("de " + os.environ.get("PRECO_DE", ""), f(R, 54), (255, 255, 255)
 if DE:  # risco no "de R$"
     dd = ImageDraw.Draw(DE); dx = dd.textlength("de ", font=f(R, 54)) + 10
     dd.line((dx, DE.height // 2 + 2, DE.width - 10, DE.height // 2 + 2), fill=(255, 255, 255), width=5)
+REVELA = float(os.environ["REVELA"]) if os.environ.get("REVELA") else None
+PERGUNTA = texto_img("QUANTO CUSTA?", f(B, 104), (255, 255, 255), bg=(220, 20, 60), pad=(40, 22), raio=40)
 CTA = texto_img(os.environ.get("CTA", "LINK PRA COMPRAR NO PERFIL"), f(B, 46), (255, 255, 255), bg=(0, 0, 0, 140))
 DESC = None
 if os.environ.get("DESCONTO"):
@@ -101,11 +103,16 @@ for i in range(N):
     esc = 0.9 + 0.1 * ent + 0.02 * math.sin(t * 3.1)
     cola(fr, sombra, W / 2, 720 + recorte.height * esc / 2 + 30, 1.0)
     cola(fr, recorte, W / 2, py, esc, ang)
-    if DESC: cola(fr, DESC, W / 2 + 330, 380, pop(t, 0.5) * (1 + 0.04 * math.sin(t * 6)), 12 * math.sin(t * 3))
+    # 30/09: modo "adivinha" — preco/desconto escondidos ate REVELA (s); antes disso, "QUANTO CUSTA?" pulsando
+    ini = REVELA if REVELA is not None else 0.0
+    if DESC: cola(fr, DESC, W / 2 + 330, 380, pop(t, ini + 0.5 if REVELA is None else ini + 0.25) * (1 + 0.04 * math.sin(t * 6)), 12 * math.sin(t * 3))
     if LOGO: fr.alpha_composite(LOGO, (30, 30))
     cola(fr, SELO, W / 2 + 60, 105, 1.0)
-    if DE: cola(fr, DE, W / 2, 1470, pop(t, 0.9))
-    cola(fr, PRECO, W / 2, 1570, pop(t, 1.0, 0.4) * (1 + 0.03 * math.sin(t * 5)))
+    if REVELA is not None and t < REVELA:
+        cola(fr, PERGUNTA, W / 2, 1540, pop(t, 0.3, 0.4) * (1 + 0.06 * math.sin(t * 7)), 3 * math.sin(t * 4))
+    else:
+        if DE: cola(fr, DE, W / 2, 1470, pop(t, ini + 0.9 if REVELA is None else ini))
+        cola(fr, PRECO, W / 2, 1570, pop(t, 1.0 if REVELA is None else ini + 0.1, 0.4) * (1 + 0.03 * math.sin(t * 5)))
     cola(fr, CTA, W / 2, 1810, 1.0 + 0.04 * math.sin(t * 6))
     if i == int(1.6 * FPS): fr.convert("RGB").save("capa.jpg", quality=90)
     out.write(fr.convert("RGB").tobytes())
