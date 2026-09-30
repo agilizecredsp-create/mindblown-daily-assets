@@ -32,6 +32,7 @@ jobs:
           AUDIO_URL: ${{ github.event.client_payload.audioUrl }}
           GANCHO: ${{ github.event.client_payload.gancho }}
           ESTILO: ${{ github.event.client_payload.estilo }}
+          MUSICA_URL: ${{ github.event.client_payload.musicaUrl }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           ./achadinho/render_achadinho.sh
