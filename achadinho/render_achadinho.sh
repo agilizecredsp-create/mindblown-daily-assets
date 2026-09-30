@@ -137,6 +137,7 @@ out = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920"
        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
        "Style: L,DejaVu Sans,78,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,6,2,2,60,60,560,1",
        "Style: H,DejaVu Sans,118,&H0000D6FF,&H0000D6FF,&H00000000,&HA0000000,1,0,0,0,100,100,0,0,3,10,0,5,50,50,0,1", "",
+       "Style: G,DejaVu Sans,72,&H00FFFFFF,&H00FFFFFF,&H0059AA1F,&H0059AA1F,1,0,0,0,100,100,0,0,3,26,0,5,40,40,0,1",
        "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
 # 29/09: gancho gigante (amarelo, caixa escura) nos 1,8s iniciais pra segurar o scroll
 import os
@@ -146,6 +147,10 @@ for i in range(0, len(p), 3):
     g = p[i:i + 3]
     fim = p[i + 3]["start"] if i + 3 < len(p) else g[-1]["end"] + 0.4
     out.append("Dialogue: 0,%s,%s,L,,0,0,0,,%s" % (t(g[0]["start"]), t(fim), " ".join("Shopee" + w["text"][4:] if w["text"].lower().startswith("xôpi") else w["text"] for w in g).upper()))
+# 30/09: faixa verde do Grupo VIP nos ultimos 2,2s (o link em si fica no perfil: texto no video nao e clicavel)
+if p:
+    fim_total = p[-1]["end"] + 1.2
+    out.append("Dialogue: 2,%s,%s,G,,0,0,0,,{\\fad(150,0)}GRUPO VIP NO WHATSAPP\\NOFERTAS TODO DIA · LINK NO PERFIL" % (t(max(0, fim_total - 2.2)), t(fim_total)))
 open("legenda.ass", "w", encoding="utf-8").write("\n".join(out) + "\n")
 PYEOF
 python3 legenda.py
