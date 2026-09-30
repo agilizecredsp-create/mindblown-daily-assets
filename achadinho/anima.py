@@ -63,7 +63,7 @@ if DE:  # risco no "de R$"
     dd = ImageDraw.Draw(DE); dx = dd.textlength("de ", font=f(R, 54)) + 10
     dd.line((dx, DE.height // 2 + 2, DE.width - 10, DE.height // 2 + 2), fill=(255, 255, 255), width=5)
 REVELA = float(os.environ["REVELA"]) if os.environ.get("REVELA") else None
-PERGUNTA = texto_img("QUANTO CUSTA?", f(B, 104), (255, 255, 255), bg=(220, 20, 60), pad=(40, 22), raio=40)
+PERGUNTA = texto_img("QUANTO CUSTA?", f(B, 90), (255, 255, 255), bg=(220, 20, 60), pad=(40, 22), raio=40)
 CTA = texto_img(os.environ.get("CTA", "LINK PRA COMPRAR NO PERFIL"), f(B, 46), (255, 255, 255), bg=(0, 0, 0, 140))
 DESC = None
 if os.environ.get("DESCONTO"):
