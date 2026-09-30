@@ -26,13 +26,14 @@ jobs:
           PRECO_DE: ${{ github.event.client_payload.precoDe }}
           DESCONTO: ${{ github.event.client_payload.desconto }}
           SELO: ${{ github.event.client_payload.selo }}
-          CTA: ${{ github.event.client_payload.cta }}
+          CTA: ${{ github.event.client_payload.extra.cta || github.event.client_payload.cta }}
           VOZ: ${{ github.event.client_payload.voz }}
           VELOCIDADE: ${{ github.event.client_payload.velocidade }}
           AUDIO_URL: ${{ github.event.client_payload.audioUrl }}
           GANCHO: ${{ github.event.client_payload.gancho }}
           ESTILO: ${{ github.event.client_payload.estilo }}
-          MUSICA_URL: ${{ github.event.client_payload.musicaUrl }}
+          # o GitHub aceita no maximo 10 campos no client_payload: os novos vao dentro de "extra"
+          MUSICA_URL: ${{ github.event.client_payload.extra.musica }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           ./achadinho/render_achadinho.sh
