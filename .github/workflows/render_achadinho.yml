@@ -35,6 +35,8 @@ jobs:
           # o GitHub aceita no maximo 10 campos no client_payload: os novos vao dentro de "extra"
           MUSICA_URL: ${{ github.event.client_payload.extra.musica }}
           ITENS: ${{ toJSON(github.event.client_payload.extra.itens) }}
+          VISUAL: ${{ github.event.client_payload.extra.visual }}
+          CATEGORIA: ${{ github.event.client_payload.extra.cat }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           ./achadinho/render_achadinho.sh
