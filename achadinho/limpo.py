@@ -57,8 +57,8 @@ if recorte is None:
     m = Image.new("L", foto.size, 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, foto.width - 1, foto.height - 1), 44, fill=255)
     recorte = foto.convert("RGBA"); recorte.putalpha(m)
 recorte = ImageOps.contain(recorte, (800, 800), Image.LANCZOS)
-sombra = Image.new("RGBA", (int(recorte.width * 0.7) + 80, 90), (0, 0, 0, 0))
-ImageDraw.Draw(sombra).ellipse((0, 0, sombra.width - 1, 89), fill=tuple(int(c * 0.5) for c in C2) + (110,))
+sombra = Image.new("RGBA", (int(recorte.width * 0.7) + 200, 210), (0, 0, 0, 0))  # margem pro desfoque nao cortar
+ImageDraw.Draw(sombra).ellipse((60, 60, sombra.width - 61, 149), fill=tuple(int(c * 0.5) for c in C2) + (110,))
 sombra = sombra.filter(ImageFilter.GaussianBlur(30))
 CY = 800  # centro do produto (a legenda fica por volta de y=1280-1360)
 
