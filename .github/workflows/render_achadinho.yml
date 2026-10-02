@@ -38,6 +38,8 @@ jobs:
           VISUAL: ${{ github.event.client_payload.extra.visual }}
           CATEGORIA: ${{ github.event.client_payload.extra.cat }}
           DUAS: ${{ github.event.client_payload.extra.duas }}
+          TEXTOS: ${{ toJSON(github.event.client_payload.extra.textos) }}
+          FINAL: ${{ github.event.client_payload.extra.final }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           if [ "$DUAS" = "true" ]; then
