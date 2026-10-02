@@ -33,7 +33,11 @@ def texto(txt, fnt, cor, bg=None, pad=(30, 14)):
 # cabecalho fixo (02/10: textos trocaveis via env TEXTOS pra versao do TikTok, que nao pode citar WhatsApp)
 TX = json.loads(os.environ.get("TEXTOS") or "{}") or {}
 COR_BOTAO = tuple(int(TX["cor"][i:i + 2], 16) for i in (0, 2, 4)) if TX.get("cor") else VERDE
-TIT = texto(TX.get("tit", "GRUPO VIP"), fonte("Black", 120), ESCURO, pad=(10, 4))
+tam = 120  # titulo diminui ate caber na largura (ex: "OFERTAS DE HOJE")
+while True:
+    TIT = texto(TX.get("tit", "GRUPO VIP"), fonte("Black", tam), ESCURO, pad=(10, 4))
+    if TIT.width <= 960 or tam <= 60: break
+    tam -= 6
 SUB = texto(TX.get("sub", "achadinhos todo dia no WhatsApp"), fonte("SemiBold", 46), (90, 90, 98), pad=(10, 4))
 BOTAO = texto(TX.get("botao", "ENTRAR NO GRUPO VIP"), fonte("ExtraBold", 54), (255, 255, 255), bg=COR_BOTAO, pad=(56, 26))
 GRATIS = texto(TX.get("rodape", "é grátis • link no perfil"), fonte("SemiBold", 40), (90, 90, 98), pad=(10, 4))
