@@ -177,7 +177,12 @@ PYEOF
 python3 legenda.py
 
 echo "== Renderizando =="
-if [ "${ESTILO:-}" = "top3" ]; then
+if [ "${ESTILO:-}" = "grupo" ]; then
+  # 02/10: video de convite pro Grupo VIP (carrossel de achadinhos reais + botao verde)
+  pip install "rembg[cpu]" --break-system-packages --quiet 2>/dev/null || pip install "rembg[cpu]" --quiet
+  cp ../achadinho/grupo.py .
+  python3 grupo.py "$TOTAL" | ffmpeg -y -f rawvideo -pix_fmt rgb24 -s 1080x1920 -r 30 -i - -i narracao.mp3 -filter_complex "[0:v]format=yuv420p,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]" -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
+elif [ "${ESTILO:-}" = "top3" ]; then
   # 30/09: "Top 3 do dia" — 3 artes (#3, #2, #1) trocando quando a narracao fala "Numero ..."
   cp ../achadinho/top3.py . && python3 top3.py
   cat > cortes.py << 'PYEOF'
