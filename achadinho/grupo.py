@@ -30,11 +30,13 @@ def texto(txt, fnt, cor, bg=None, pad=(30, 14)):
     d.text((pad[0] - x0, pad[1] - y0), txt, font=fnt, fill=cor)
     return im
 
-# cabecalho fixo
-TIT = texto("GRUPO VIP", fonte("Black", 120), ESCURO, pad=(10, 4))
-SUB = texto("achadinhos todo dia no WhatsApp", fonte("SemiBold", 46), (90, 90, 98), pad=(10, 4))
-BOTAO = texto("ENTRAR NO GRUPO VIP", fonte("ExtraBold", 54), (255, 255, 255), bg=VERDE, pad=(56, 26))
-GRATIS = texto("é grátis • link no perfil", fonte("SemiBold", 40), (90, 90, 98), pad=(10, 4))
+# cabecalho fixo (02/10: textos trocaveis via env TEXTOS pra versao do TikTok, que nao pode citar WhatsApp)
+TX = json.loads(os.environ.get("TEXTOS") or "{}") or {}
+COR_BOTAO = tuple(int(TX["cor"][i:i + 2], 16) for i in (0, 2, 4)) if TX.get("cor") else VERDE
+TIT = texto(TX.get("tit", "GRUPO VIP"), fonte("Black", 120), ESCURO, pad=(10, 4))
+SUB = texto(TX.get("sub", "achadinhos todo dia no WhatsApp"), fonte("SemiBold", 46), (90, 90, 98), pad=(10, 4))
+BOTAO = texto(TX.get("botao", "ENTRAR NO GRUPO VIP"), fonte("ExtraBold", 54), (255, 255, 255), bg=COR_BOTAO, pad=(56, 26))
+GRATIS = texto(TX.get("rodape", "é grátis • link no perfil"), fonte("SemiBold", 40), (90, 90, 98), pad=(10, 4))
 try:
     lg = Image.open("../achadinho/logo.png").convert("RGBA").resize((84, 84))
     m = Image.new("L", (84, 84), 0); ImageDraw.Draw(m).ellipse((0, 0, 83, 83), fill=255); lg.putalpha(m)
