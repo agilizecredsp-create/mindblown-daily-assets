@@ -28,6 +28,8 @@ import asyncio, json, os, re, edge_tts
 # a voz pronuncia "Shopee" errado (Chopei/Shopping); "Xôpi" foi a grafia aprovada pela Leydiane (24/09).
 # A legenda volta pra "Shopee" no legenda.py.
 TEXTO = re.sub(r"(?i)\bshopee\b", "Xôpi", os.environ["NARRACAO"])
+# 01/10: a voz multilingue fala "me segue" como "mi sigue" (espanhol) -> troca por "siga o perfil", que ela pronuncia certo
+TEXTO = re.sub(r"(?i)\bme segue\b", "siga o perfil", TEXTO)
 async def main():
     com = edge_tts.Communicate(TEXTO, os.environ.get("VOZ") or "pt-BR-ThalitaMultilingualNeural", rate=os.environ.get("VELOCIDADE") or "+10%", boundary="WordBoundary")
     palavras = []
@@ -127,6 +129,15 @@ fundo.save("capa.jpg", quality=90)
 PYEOF
 python3 arte.py
 
+if [ "${VISUAL:-}" = "limpo" ]; then
+  # 01/10: estilo "limpo" usa a fonte Poppins (Google Fonts, licenca OFL) — no PIL e na legenda (libass via fontconfig)
+  mkdir -p ~/.fonts
+  for p in Medium SemiBold Bold ExtraBold Black; do
+    curl -sL --fail --retry 3 -o ~/.fonts/Poppins-$p.ttf "https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-$p.ttf" || echo "fonte $p falhou"
+  done
+  fc-cache -f >/dev/null 2>&1 || true
+fi
+
 echo "== Legenda (.ass, 3 palavras por vez) =="
 cat > legenda.py << 'PYEOF'
 import json
@@ -151,6 +162,14 @@ for i in range(0, len(p), 3):
 if p:
     fim_total = p[-1]["end"] + 1.2
     out.append("Dialogue: 2,%s,%s,G,,0,0,0,,{\\fad(150,0)}GRUPO VIP NO WHATSAPP\\NOFERTAS TODO DIA\\NLINK NO PERFIL" % (t(max(0, fim_total - 2.2)), t(fim_total)))
+if os.environ.get("VISUAL") == "limpo":
+    # 01/10: estilo limpo — Poppins, gancho escuro no topo (sem caixa), legenda branca com contorno escuro, tela final laranja da marca
+    out = [l for l in out if not l.startswith("Style: ")]
+    i = out.index("[V4+ Styles]") + 2
+    out[i:i] = ["Style: L,Poppins,66,&H00FFFFFF,&H00FFFFFF,&H00221E1E,&H00000000,-1,0,0,0,100,100,0,0,1,5,0,2,60,60,600,1",
+                "Style: H,Poppins ExtraBold,88,&H00221E1E,&H00221E1E,&H00FFFFFF,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,8,60,60,230,1",
+                "Style: G,Poppins,64,&H00FFFFFF,&H00FFFFFF,&H002D4DEE,&H002D4DEE,-1,0,0,0,100,100,0,0,3,28,0,5,60,60,0,1"]
+    out = [l.replace("0:00:01.80,H,,0,0,0,,{\\fad(0,200)}", "0:00:02.60,H,,0,0,0,,{\\fad(150,300)}") for l in out]
 open("legenda.ass", "w", encoding="utf-8").write("\n".join(out) + "\n")
 PYEOF
 python3 legenda.py
@@ -171,7 +190,7 @@ PYEOF
   F1=$(python3 -c "import math; print(math.ceil($D1 * 30))"); F2=$(python3 -c "import math; print(math.ceil($D2 * 30))"); F3=$(python3 -c "import math; print(math.ceil($D3 * 30))")
   Z="zoompan=z='min(1+on*0.0009,1.07)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30"
   ffmpeg -y -i seg1.png -i seg2.png -i seg3.png -i narracao.mp3 -filter_complex "[0:v]scale=1188:2112,$Z:d=$F1,trim=duration=$D1[a];[1:v]scale=1188:2112,$Z:d=$F2,trim=duration=$D2[b];[2:v]scale=1188:2112,$Z:d=$F3,trim=duration=$D3[c];[a][b][c]concat=n=3:v=1:a=0,format=yuv420p,ass=legenda.ass[v];[3:a]apad=pad_dur=1.2[au]" -map "[v]" -map "[au]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
-elif [ "${ESTILO:-}" = "animado" ] || [ "${ESTILO:-}" = "adivinha" ]; then
+elif [ "${ESTILO:-}" = "animado" ] || [ "${ESTILO:-}" = "adivinha" ] || [ "${VISUAL:-}" = "limpo" ]; then
   # 29/09: estilo animado — produto recortado (rembg) flutuando sobre fundo em movimento + preco pulando
   # 30/09: "adivinha" = mesmo visual, mas o preco fica escondido ("QUANTO CUSTA?") ate a narracao dizer "E o preco? ..."
   if [ "${ESTILO}" = "adivinha" ]; then
@@ -186,8 +205,9 @@ PYEOF
     echo "Preco revelado em ${REVELA}s"
   fi
   pip install "rembg[cpu]" --break-system-packages --quiet 2>/dev/null || pip install "rembg[cpu]" --quiet
-  cp ../achadinho/anima.py . 2>/dev/null || true
-  python3 anima.py "$TOTAL" | ffmpeg -y -f rawvideo -pix_fmt rgb24 -s 1080x1920 -r 30 -i - -i narracao.mp3 -filter_complex "[0:v]format=yuv420p,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]" -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
+  ROT=anima.py; [ "${VISUAL:-}" = "limpo" ] && ROT=limpo.py
+  cp ../achadinho/$ROT . 2>/dev/null || true
+  python3 $ROT "$TOTAL" | ffmpeg -y -f rawvideo -pix_fmt rgb24 -s 1080x1920 -r 30 -i - -i narracao.mp3 -filter_complex "[0:v]format=yuv420p,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]" -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
 else
 FRAMES=$(python3 -c "import math; print(math.ceil($TOTAL * 30))")
 ffmpeg -y -i arte.png -i narracao.mp3   -filter_complex "[0:v]scale=1188:2112,zoompan=z='if(lt(on,45),1+on*0.0012,min(1.054+(on-45)*0.00015,1.08))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=$FRAMES:s=1080x1920:fps=30,ass=legenda.ass[v];[1:a]apad=pad_dur=1.2[a]"   -map "[v]" -map "[a]" -t "$TOTAL" -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart video.mp4 -loglevel error
