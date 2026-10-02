@@ -40,13 +40,17 @@ jobs:
           DUAS: ${{ github.event.client_payload.extra.duas }}
           TEXTOS: ${{ toJSON(github.event.client_payload.extra.textos) }}
           FINAL: ${{ github.event.client_payload.extra.final }}
+          NARRACAO_TT: ${{ github.event.client_payload.extra.narr_tt }}
+          TEXTOS_TT: ${{ github.event.client_payload.extra.textos_tt && toJSON(github.event.client_payload.extra.textos_tt) || '' }}
         run: |
           chmod +x achadinho/render_achadinho.sh
           if [ "$DUAS" = "true" ]; then
             # 01/10: duas versoes — TikTok (sem WhatsApp, final "siga o perfil") e Instagram/YouTube (voz reforca o Grupo VIP)
-            FINAL=tiktok ./achadinho/render_achadinho.sh
+            # 02/10: o convite diario (ESTILO=grupo) manda narracao/textos proprios pro TikTok (narr_tt / textos_tt)
+            FINAL=tiktok NARRACAO="${NARRACAO_TT:-$NARRACAO}" TEXTOS="${TEXTOS_TT:-$TEXTOS}" ./achadinho/render_achadinho.sh
             cp render_work/video.mp4 /tmp/video_tiktok.mp4
-            NARRACAO="$NARRACAO Entra no nosso Grupo VIP do WhatsApp pra receber ofertas todo dia!" ./achadinho/render_achadinho.sh
+            if [ "$ESTILO" = "grupo" ]; then FINAL= ./achadinho/render_achadinho.sh
+            else NARRACAO="$NARRACAO Entra no nosso Grupo VIP do WhatsApp pra receber ofertas todo dia!" ./achadinho/render_achadinho.sh; fi
             cp /tmp/video_tiktok.mp4 render_work/video_tiktok.mp4
           else
             ./achadinho/render_achadinho.sh
