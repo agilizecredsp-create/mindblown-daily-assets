@@ -166,9 +166,9 @@ if os.environ.get("VISUAL") == "limpo":
     # 01/10: estilo limpo — Poppins, gancho escuro no topo (sem caixa), legenda branca com contorno escuro, tela final laranja da marca
     out = [l for l in out if not l.startswith("Style: ")]
     i = out.index("[V4+ Styles]") + 2
-    out[i:i] = ["Style: L,Poppins,66,&H00FFFFFF,&H00FFFFFF,&H00221E1E,&H00000000,-1,0,0,0,100,100,0,0,1,5,0,2,60,60,600,1",
-                "Style: H,Poppins ExtraBold,88,&H00221E1E,&H00221E1E,&H00FFFFFF,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,8,60,60,230,1",
-                "Style: G,Poppins,64,&H00FFFFFF,&H00FFFFFF,&H002D4DEE,&H002D4DEE,-1,0,0,0,100,100,0,0,3,28,0,5,60,60,0,1"]
+    out[i:i] = ["Style: L,Poppins,96,&H00FFFFFF,&H00FFFFFF,&H00221E1E,&H00000000,-1,0,0,0,100,100,0,0,1,5,0,2,60,60,600,1",
+                "Style: H,Poppins ExtraBold,124,&H00221E1E,&H00221E1E,&H00FFFFFF,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,8,60,60,230,1",
+                "Style: G,Poppins,86,&H00FFFFFF,&H00FFFFFF,&H002D4DEE,&H002D4DEE,-1,0,0,0,100,100,0,0,3,28,0,5,60,60,0,1"]
     out = [l.replace("0:00:01.80,H,,0,0,0,,{\\fad(0,200)}", "0:00:02.60,H,,0,0,0,,{\\fad(150,300)}") for l in out]
 open("legenda.ass", "w", encoding="utf-8").write("\n".join(out) + "\n")
 PYEOF
