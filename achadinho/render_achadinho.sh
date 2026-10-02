@@ -161,7 +161,9 @@ for i in range(0, len(p), 3):
 # 30/09: faixa verde do Grupo VIP nos ultimos 2,2s (o link em si fica no perfil: texto no video nao e clicavel)
 if p:
     fim_total = p[-1]["end"] + 1.2
-    out.append("Dialogue: 2,%s,%s,G,,0,0,0,,{\\fad(150,0)}GRUPO VIP NO WHATSAPP\\NOFERTAS TODO DIA\\NLINK NO PERFIL" % (t(max(0, fim_total - 2.2)), t(fim_total)))
+    # 01/10: versao do TikTok nao chama pro WhatsApp (o TikTok entrega menos video que manda pra outro app)
+    final = "SIGA O PERFIL\\NMAIS ACHADOS TODO DIA" if os.environ.get("FINAL") == "tiktok" else "GRUPO VIP NO WHATSAPP\\NOFERTAS TODO DIA\\NLINK NO PERFIL"
+    out.append("Dialogue: 2,%s,%s,G,,0,0,0,,{\\fad(150,0)}%s" % (t(max(0, fim_total - 2.2)), t(fim_total), final))
 if os.environ.get("VISUAL") == "limpo":
     # 01/10: estilo limpo — Poppins, gancho escuro no topo (sem caixa), legenda branca com contorno escuro, tela final laranja da marca
     out = [l for l in out if not l.startswith("Style: ")]
