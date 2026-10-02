@@ -37,12 +37,22 @@ jobs:
           ITENS: ${{ toJSON(github.event.client_payload.extra.itens) }}
           VISUAL: ${{ github.event.client_payload.extra.visual }}
           CATEGORIA: ${{ github.event.client_payload.extra.cat }}
+          DUAS: ${{ github.event.client_payload.extra.duas }}
         run: |
           chmod +x achadinho/render_achadinho.sh
-          ./achadinho/render_achadinho.sh
+          if [ "$DUAS" = "true" ]; then
+            # 01/10: duas versoes — TikTok (sem WhatsApp, final "siga o perfil") e Instagram/YouTube (voz reforca o Grupo VIP)
+            FINAL=tiktok ./achadinho/render_achadinho.sh
+            cp render_work/video.mp4 /tmp/video_tiktok.mp4
+            NARRACAO="$NARRACAO Entra no nosso Grupo VIP do WhatsApp pra receber ofertas todo dia!" ./achadinho/render_achadinho.sh
+            cp /tmp/video_tiktok.mp4 render_work/video_tiktok.mp4
+          else
+            ./achadinho/render_achadinho.sh
+          fi
       - name: Publicar como Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="achadinho-${{ github.event.client_payload.correlationId }}"
-          gh release create "$TAG" render_work/video.mp4 render_work/capa.jpg --title "$TAG" --notes "Achadinho automatico via n8n"
+          EXTRA=""; [ -f render_work/video_tiktok.mp4 ] && EXTRA="render_work/video_tiktok.mp4"
+          gh release create "$TAG" render_work/video.mp4 render_work/capa.jpg $EXTRA --title "$TAG" --notes "Achadinho automatico via n8n"
