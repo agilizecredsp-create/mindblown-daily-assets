@@ -1,0 +1,31 @@
+name: Render Stories
+on:
+  repository_dispatch:
+    types: [render-stories]
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Gerar imagens
+        env:
+          ITENS: ${{ toJSON(github.event.client_payload.itens) }}
+        run: |
+          pip install pillow "rembg[cpu]" --quiet
+          mkdir -p ~/.fonts
+          for p in Medium SemiBold Bold ExtraBold Black; do
+            curl -sL --fail --retry 3 -o ~/.fonts/Poppins-$p.ttf "https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-$p.ttf" || echo "fonte $p falhou"
+          done
+          mkdir -p render_work && cd render_work
+          python3 ../achadinho/stories.py
+          ls -la
+      - name: Publicar como Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="stories-${{ github.event.client_payload.correlationId }}"
+          gh release create "$TAG" render_work/story_*.png --title "$TAG" --notes "Kit de Stories automatico via n8n"
