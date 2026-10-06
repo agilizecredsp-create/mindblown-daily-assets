@@ -14,6 +14,7 @@ jobs:
       - name: Gerar imagens
         env:
           ITENS: ${{ toJSON(github.event.client_payload.itens) }}
+          PERGUNTA: ${{ github.event.client_payload.pergunta }}
         run: |
           pip install pillow "rembg[cpu]" --quiet
           mkdir -p ~/.fonts
