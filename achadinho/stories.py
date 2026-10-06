@@ -106,3 +106,28 @@ for n, it in enumerate(json.loads(os.environ["ITENS"]), 1):
     # 1560-1800 fica livre pra figurinha de link do Instagram
     fr.convert("RGB").save("story_%d.png" % n, optimize=True)
     print("story", n, "ok")
+
+# 06/10: Story da caixa de perguntas (engaja e mostra o que o publico quer comprar). Espaco livre no meio pra figurinha "Perguntas".
+if os.environ.get("PERGUNTA"):
+    C1, C2 = (252, 242, 230), (244, 222, 198)
+    g = Image.new("RGB", (1, H)); px = g.load()
+    for y in range(H):
+        k = y / (H - 1); px[0, y] = tuple(int(C1[c] + (C2[c] - C1[c]) * k) for c in range(3))
+    fr = g.resize((W, H)).convert("RGBA")
+    if LOGO:
+        nome = texto("Achei Barato!", fonte("Bold", 38), ESCURO, pad=(0, 0))
+        marca = Image.new("RGBA", (84 + 18 + nome.width + 40, 104), (0, 0, 0, 0)); dm = ImageDraw.Draw(marca)
+        dm.rounded_rectangle((0, 0, marca.width - 1, 103), 52, fill=(255, 255, 255, 190))
+        marca.alpha_composite(LOGO, (10, 10)); marca.alpha_composite(nome, (84 + 28, (104 - nome.height) // 2))
+        fr.alpha_composite(marca, (40, 70))
+    centro(fr, texto("ME CONTA!", fonte("Bold", 44), (255, 255, 255), bg=LARANJA, pad=(40, 16)), 360)
+    ft = fonte("Black", 104); y = 520
+    for l in quebra(os.environ["PERGUNTA"], ft, 960):
+        centro(fr, texto(l, ft, ESCURO, pad=(6, 4)), y); y += 124
+    fs = fonte("SemiBold", 48); y += 30
+    for l in quebra(os.environ.get("PERGUNTA_SUB", "Eu procuro e acho mais barato pra você!"), fs, 900):
+        centro(fr, texto(l, fs, CINZA, pad=(6, 4)), y); y += 64
+    # 1000-1500 livre pra figurinha de perguntas
+    centro(fr, texto("responde aqui embaixo", fonte("SemiBold", 42), CINZA, pad=(10, 4)), 1620)
+    fr.convert("RGB").save("story_pergunta.png", optimize=True)
+    print("pergunta ok")
