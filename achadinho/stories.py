@@ -128,6 +128,6 @@ if os.environ.get("PERGUNTA"):
     for l in quebra(os.environ.get("PERGUNTA_SUB", "Eu procuro e acho mais barato pra você!"), fs, 900):
         centro(fr, texto(l, fs, CINZA, pad=(6, 4)), y); y += 64
     # 1000-1500 livre pra figurinha de perguntas
-    centro(fr, texto("responde aqui embaixo", fonte("SemiBold", 42), CINZA, pad=(10, 4)), 1620)
+    centro(fr, texto("toque na caixinha e responda", fonte("SemiBold", 42), CINZA, pad=(10, 4)), 1620)
     fr.convert("RGB").save("story_pergunta.png", optimize=True)
     print("pergunta ok")
