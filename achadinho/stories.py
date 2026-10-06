@@ -142,6 +142,52 @@ for n, it in enumerate(json.loads(os.environ.get("ITENS") or "[]") or [], 1):
     fr.convert("RGB").save("story_%d.png" % n, optimize=True)
     print("story", n, "ok")
 
+# 06/10: Story de CONVITE pro Grupo VIP (pro Instagram pessoal da Leydiane): fundo laranja/rosa da marca, chamada em 1a pessoa,
+# colagem com 4 achadinhos reais, beneficios com check e botao grande; espaco embaixo pra figurinha de link do grupo.
+if os.environ.get("CONVITE") and os.environ["CONVITE"] != "null":
+    cv = json.loads(os.environ["CONVITE"])
+    g = Image.new("RGB", (1, H)); px = g.load()
+    A, B2 = (245, 96, 52), (226, 38, 112)
+    for y in range(H):
+        k = y / (H - 1); px[0, y] = tuple(int(A[c] + (B2[c] - A[c]) * k) for c in range(3))
+    fr = g.resize((W, H)).convert("RGBA")
+    luz = Image.new("RGBA", (W, H), (0, 0, 0, 0)); dl = ImageDraw.Draw(luz)
+    dl.ellipse((-300, -200, 700, 700), fill=(255, 220, 120, 90)); dl.ellipse((500, 1100, 1400, 2000), fill=(255, 255, 255, 50))
+    fr.alpha_composite(luz.filter(ImageFilter.GaussianBlur(120)))
+    BR = (255, 255, 255)
+    centro(fr, texto(cv.get("selo", "GRUPO VIP • GRÁTIS"), fonte("Bold", 36), LARANJA, bg=(255, 255, 255), pad=(34, 12)), 150)
+    y = 270
+    for l, tam in [(cv.get("l1", "Criei um grupo de"), 70), (cv.get("l2", "ACHADINHOS"), 132)]:
+        centro(fr, texto(l, fonte("Black" if tam > 100 else "ExtraBold", tam), BR, pad=(6, 2)), y); y += int(tam * 1.15)
+    centro(fr, texto(cv.get("sub", "com preço baixo de verdade"), fonte("SemiBold", 48), (255, 236, 220), pad=(6, 2)), y + 10)
+    # colagem 2x2 com cards levemente inclinados
+    pos = [(285, 820, -6), (795, 800, 5), (300, 1250, 4), (790, 1270, -5)]
+    for (cx, cy, ang), u in zip(pos, cv.get("imgs", [])[:4]):
+        foto = baixa(u)
+        if foto is None: continue
+        foto = ImageOps.fit(foto, (400, 400), Image.LANCZOS).convert("RGBA")
+        card = Image.new("RGBA", (440, 440), (0, 0, 0, 0)); ImageDraw.Draw(card).rounded_rectangle((0, 0, 439, 439), 40, fill=(255, 255, 255, 255))
+        mk = Image.new("L", (400, 400), 0); ImageDraw.Draw(mk).rounded_rectangle((0, 0, 399, 399), 28, fill=255); foto.putalpha(mk)
+        card.alpha_composite(foto, (20, 20))
+        sh = Image.new("RGBA", (560, 560), (0, 0, 0, 0)); ImageDraw.Draw(sh).rounded_rectangle((60, 75, 500, 515), 44, fill=(60, 0, 20, 90))
+        sh = sh.filter(ImageFilter.GaussianBlur(24)).rotate(ang, resample=Image.BICUBIC)
+        fr.alpha_composite(sh, (int(cx - 280), int(cy - 280)))
+        cr = card.rotate(ang, resample=Image.BICUBIC, expand=True); fr.alpha_composite(cr, (int(cx - cr.width / 2), int(cy - cr.height / 2)))
+    # beneficios
+    y = 1540
+    for b in cv.get("beneficios", ["Ofertas todo dia", "Shopee, Amazon e Mercado Livre", "É grátis e sai quando quiser"]):
+        t = texto(b, fonte("SemiBold", 42), BR, pad=(0, 0))
+        ck = Image.new("RGBA", (54, 54), (0, 0, 0, 0)); dc = ImageDraw.Draw(ck); dc.ellipse((0, 0, 53, 53), fill=(255, 255, 255))
+        dc.line([(14, 28), (23, 37), (40, 18)], fill=LARANJA, width=7)
+        larg = 54 + 18 + t.width; x0 = int((W - larg) / 2)
+        fr.alpha_composite(ck, (x0, y - 27)); fr.alpha_composite(t, (x0 + 72, y - t.height // 2 - 4)); y += 70
+    # 1760-1880 livre pra figurinha de link
+    seta = Image.new("RGBA", (64, 40), (0, 0, 0, 0)); ImageDraw.Draw(seta).polygon([(0, 0), (64, 0), (32, 38)], fill=BR)
+    centro(fr, texto(cv.get("cta", "toque no link e entra"), fonte("Bold", 44), BR, pad=(6, 2)), 1755)
+    centro(fr, seta, 1810)
+    fr.convert("RGB").save("story_convite.png", optimize=True)
+    print("convite ok")
+
 # 06/10: Story da caixa de perguntas (engaja e mostra o que o publico quer comprar). Espaco livre no meio pra figurinha "Perguntas".
 if os.environ.get("PERGUNTA"):
     fr, AC = fundo("viral")
