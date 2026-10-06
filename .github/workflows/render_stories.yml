@@ -15,6 +15,7 @@ jobs:
         env:
           ITENS: ${{ toJSON(github.event.client_payload.itens) }}
           PERGUNTA: ${{ github.event.client_payload.pergunta }}
+          ROTULO: ${{ github.event.client_payload.rotulo }}
         run: |
           pip install pillow "rembg[cpu]" --quiet
           mkdir -p ~/.fonts
