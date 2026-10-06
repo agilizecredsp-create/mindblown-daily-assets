@@ -16,6 +16,7 @@ jobs:
           ITENS: ${{ toJSON(github.event.client_payload.itens) }}
           PERGUNTA: ${{ github.event.client_payload.pergunta }}
           ROTULO: ${{ github.event.client_payload.rotulo }}
+          CONVITE: ${{ toJSON(github.event.client_payload.convite) }}
         run: |
           pip install pillow "rembg[cpu]" --quiet
           mkdir -p ~/.fonts
